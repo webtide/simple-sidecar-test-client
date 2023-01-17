@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.webtide.jetty.httpclient.test</groupId>
-  <artifactId>simple-test-client</artifactId>
+  <artifactId>simple-sidecar-test-client</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
