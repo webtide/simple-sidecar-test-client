@@ -9,13 +9,16 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
-  <name>simple-test-client</name>
+  <name>simple-sidecar-test-client</name>
+
+  <description>Generate a sidecar type project with a server starting a jetty client to talk to another server running in the same pod</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <docker.image.version>latest</docker.image.version>
+    <load-generator.version>2.1.3</load-generator.version>
   </properties>
 
   <dependencies>
@@ -29,6 +32,16 @@
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
       <version>10.0.13</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mortbay.jetty.loadgenerator</groupId>
+      <artifactId>jetty-load-generator-client</artifactId>
+      <version>${load-generator.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mortbay.jetty.loadgenerator</groupId>
+      <artifactId>jetty-load-generator-listeners</artifactId>
+      <version>${load-generator.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
