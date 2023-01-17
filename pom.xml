@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.webtide.jetty.httpclient.test</groupId>
+  <artifactId>simple-test-client</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>simple-test-client</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <docker.image.version>latest</docker.image.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>4.0.4</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+      <version>10.0.13</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.3.2</version>
+          <configuration>
+            <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>build-docker-client</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>build</argument>
+                <argument>.</argument>
+                <argument>-f</argument>
+                <argument>Dockerfile-client</argument>
+                <argument>--tag=jettyproject/jetty-simple-test-client:latest</argument>
+                <argument>--build-arg</argument>
+                <argument>WAR_FILE=${project.build.finalName}.war</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>build-docker-server</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>build</argument>
+                <argument>.</argument>
+                <argument>-f</argument>
+                <argument>Dockerfile-server</argument>
+                <argument>--tag=jettyproject/jetty-simple-test-server:latest</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--      <plugin>-->
+      <!--        <groupId>com.google.cloud.tools</groupId>-->
+      <!--        <artifactId>jib-maven-plugin</artifactId>-->
+      <!--        <version>3.3.1</version>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <id>client-part</id>-->
+      <!--            <phase>package</phase>-->
+      <!--            <goals>-->
+      <!--              <goal>build</goal>-->
+      <!--            </goals>-->
+      <!--            <configuration>-->
+      <!--              <allowInsecureRegistries>true</allowInsecureRegistries>-->
+      <!--              <from>-->
+      <!--                <image>jetty:10.0.13-jdk17-alpine-eclipse-temurin</image>-->
+      <!--              </from>-->
+      <!--              <to>-->
+      <!--                <image>docker.io/jettyproject/jetty-simple-test-client/${docker.image.version}</image>-->
+      <!--              </to>-->
+      <!--              <container>-->
+      <!--                <entrypoint>java,-jar,/usr/local/jetty/start.jar</entrypoint>-->
+      <!--              </container>-->
+      <!--              <extraDirectories>-->
+      <!--                <paths>-->
+      <!--                  <path>-->
+      <!--                    <from>${project.build.directory}</from>-->
+      <!--                    <into>/var/lib/jetty/webapps</into>-->
+      <!--                    <includes>${project.build.finalName}.war</includes>-->
+      <!--                  </path>-->
+      <!--                </paths>-->
+      <!--              </extraDirectories>-->
+      <!--            </configuration>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
+      <!--      <plugin>-->
+      <!--        <groupId>com.spotify</groupId>-->
+      <!--        <artifactId>dockerfile-maven-plugin</artifactId>-->
+      <!--        <version>1.4.13</version>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <id>docker-client</id>-->
+      <!--            <goals>-->
+      <!--              <goal>build</goal>-->
+      <!--&lt;!&ndash;              <goal>push</goal>&ndash;&gt;-->
+      <!--            </goals>-->
+      <!--            <phase>package</phase>-->
+      <!--            <configuration>-->
+      <!--              <dockerfile>Dockerfile-client</dockerfile>-->
+      <!--                <repository>jettyproject/jetty-simple-test-client</repository>-->
+      <!--&lt;!&ndash;              <tag>${docker.image.version}</tag>&ndash;&gt;-->
+      <!--              <buildArgs>-->
+      <!--                <WAR_FILE>${project.build.finalName}.war</WAR_FILE>-->
+      <!--              </buildArgs>-->
+      <!--            </configuration>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
+
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <properties>
+        <docker.image.version>${project.version}</docker.image.version>
+      </properties>
+    </profile>
+  </profiles>
+</project>

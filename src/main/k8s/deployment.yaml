@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-jetty-sidecar
+  namespace: jetty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-test-sidecar
+  template:
+    metadata:
+      labels:
+        app: simple-test-sidecar
+    spec:
+      nodeSelector:
+        simple-test-sidecar: "true"
+      containers:
+        - name: jetty-simple-client-server
+          image: jettyproject/jetty-simple-test-client:latest
+          resources:
+            limits:
+              memory: "8Gi"
+              cpu: "2.4"
+            requests:
+              memory: "8Gi"
+              cpu: "2.4"
+          ports:
+            - containerPort: 8080
+          args: ["jetty.http.port","8080"]
+        - name: jetty-simple-server
+          image: jettyproject/jetty-simple-test-server:latest
+          resources:
+            limits:
+              memory: "4Gi"
+              cpu: "0.2"
+            requests:
+              memory: "4Gi"
+              cpu: "0.2"
+          ports:
+            - containerPort: 9090
+          args: ["jetty.http.port","9090"]

@@ -1,0 +1,4 @@
+FROM jetty:10.0.13-jdk11-alpine-eclipse-temurin
+
+ARG WAR_FILE
+ADD target/${WAR_FILE} /var/lib/jetty/webapps/webapp-with-client.war
