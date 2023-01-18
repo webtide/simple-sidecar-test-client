@@ -51,6 +51,13 @@
     </dependency>
   </dependencies>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>local-deploy</id>
+      <url>file://${project.build.directory}/local-deploy-repository</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -125,6 +132,20 @@
             </configuration>
           </execution>
           <execution>
+            <id>push-docker-client</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>push</argument>
+                <argument>jettyproject/jetty-simple-test-client:latest</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
             <id>build-docker-server</id>
             <phase>package</phase>
             <goals>
@@ -138,6 +159,20 @@
                 <argument>-f</argument>
                 <argument>Dockerfile-server</argument>
                 <argument>--tag=jettyproject/jetty-simple-test-server:latest</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>push-docker-server</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>push</argument>
+                <argument>jettyproject/jetty-simple-test-server:latest</argument>
               </arguments>
             </configuration>
           </execution>
