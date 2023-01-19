@@ -2,3 +2,5 @@ FROM jetty:10.0.13-jdk11-alpine-eclipse-temurin
 
 ARG WAR_FILE
 ADD target/${WAR_FILE} /var/lib/jetty/webapps/webapp-with-client.war
+
+RUN java -jar "$JETTY_HOME/start.jar" --add-module=http,ssl,https,test-keystore,deploy,webapp
