@@ -7,7 +7,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.mortbay.jetty.load.generator.HTTP1ClientTransportBuilder;
 import org.mortbay.jetty.load.generator.LoadGenerator;
 import org.mortbay.jetty.load.generator.Resource;
-import org.mortbay.jetty.load.generator.listeners.ReportListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,20 +14,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.Instant;
-import java.util.EventListener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RunServlet extends HttpServlet {
-
-    private static final String TARGET_HOST = System.getProperty("target.host", "localhost");
-    private static final int TARGET_PORT = Integer.getInteger("target.port", 8443);
 
     private static boolean RUN_LOAD_ON_START = Boolean.getBoolean("runLoadOnStart");
 
@@ -42,7 +35,13 @@ public class RunServlet extends HttpServlet {
         // then run test
         if (Boolean.getBoolean("runLoad.onStart")){
             try {
-                runLoad(getLoadTimeMinutes(null));
+                new Thread(() -> {
+                    try {
+                        runLoad(null);
+                    } catch (ExecutionException | InterruptedException | TimeoutException e) {
+                        LOGGER.error("Ignore except running load:" + e.getMessage(), e);
+                    }
+                }).start();
             } catch (Throwable e) {
                 LOGGER.error("error running the load", e);
                 throw new RuntimeException(e);
@@ -50,24 +49,29 @@ public class RunServlet extends HttpServlet {
         }
     }
 
-    private int getLoadTimeMinutes(HttpServletRequest request) {
-        if (request != null) {
-           String minutes = request.getParameter("time");
-           if (minutes != null) {
-               return Integer.valueOf(minutes);
-           }
+    private String getParameterValue(HttpServletRequest request, String paramName, String sysProp, String defaultValue) {
+        if(request != null) {
+            String fromRequestParam = request.getParameter(paramName);
+            if(fromRequestParam != null) {
+                return fromRequestParam;
+            }
         }
-        return Integer.getInteger("runLoad.time", 5);
+        return System.getProperty(sysProp, defaultValue);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if ("true".equals(req.getParameter("runLoad"))) {
-            try {
-                runLoad(getLoadTimeMinutes(req));
-            } catch (ExecutionException | InterruptedException | TimeoutException e) {
-                LOGGER.error("Ignore except running load:" + e.getMessage(), e);
-            }
+            new Thread(() -> {
+                try {
+                    runLoad(req);
+                } catch (ExecutionException | InterruptedException | TimeoutException e) {
+                    LOGGER.error("Ignore except running load:" + e.getMessage(), e);
+                }
+            }).start();
+            PrintWriter writer = resp.getWriter();
+            writer.println("Load Restarted");
+            writer.flush();
         } else {
             PrintWriter writer = resp.getWriter();
             writer.println("Hello from RunServlet");
@@ -75,7 +79,8 @@ public class RunServlet extends HttpServlet {
         }
     }
 
-    private void runLoad(int minutes) throws ExecutionException, InterruptedException, TimeoutException {
+    private void runLoad(HttpServletRequest request) throws ExecutionException, InterruptedException, TimeoutException {
+        long minutes = Integer.parseInt(getParameterValue(request, "time", "runLoad.time", "5"));
         LOGGER.info("start run for {} minutes", minutes);
         Resource resource = new Resource("/demo-simple/");
 
@@ -85,18 +90,18 @@ public class RunServlet extends HttpServlet {
         sslContextFactory.setTrustAll(true);
 
         LoadGenerator generator = LoadGenerator.builder()
-                .scheme("https")
-                .host(TARGET_HOST)
-                .port(TARGET_PORT)
+                .scheme(getParameterValue(request, "scheme", "runLoad.scheme", "https"))
+                .host(getParameterValue(request, "host", "runLoad.host", "localhost"))
+                .port(Integer.parseInt(getParameterValue(request, "port", "runLoad.port", "8443")))
                 .resource(resource)
                 .sslContextFactory(sslContextFactory)
                 .httpClientTransportBuilder(new HTTP1ClientTransportBuilder())
-                .threads(2)
-                .usersPerThread(10)
-                .channelsPerUser(6)
-                .warmupIterationsPerThread(10)
-                .iterationsPerThread(100)
-                .runFor(minutes, TimeUnit.MINUTES) // Overrides iterationsPerThread()
+                .threads(Integer.parseInt(getParameterValue(request, "threads", "runLoad.threads", "2")))
+                .usersPerThread(Integer.parseInt(getParameterValue(request, "usersPerThread", "runLoad.usersPerThread", "10")))
+                .channelsPerUser(Integer.parseInt(getParameterValue(request, "channelsPerUser", "runLoad.channelsPerUser", "6")))
+                .warmupIterationsPerThread(Integer.parseInt(getParameterValue(request, "warmupIterationsPerThread", "runLoad.warmupIterationsPerThread", "10")))
+                //.iterationsPerThread(100)
+                .runFor(minutes, TimeUnit.MINUTES)
                 .listener(responseTimeListener)
                 .resourceListener(responseTimeListener)
                 .build();
@@ -105,10 +110,6 @@ public class RunServlet extends HttpServlet {
         complete.get(minutes + 1, TimeUnit.MINUTES);
         Histogram histogram = responseTimeListener.histogram;
         LOGGER.info(new HistogramSnapshot(histogram).toString());
-//        LOGGER.info("runLoad result : totalCount{}, maxValue: {}, mean: {}, 50percentile: {}, 90percentile: {}",
-//                histogram.getTotalCount(), toMs(histogram.getMaxValue()),
-//                toMs(histogram.getMean()), toMs(histogram.getValueAtPercentile(50)),
-//                toMs(histogram.getValueAtPercentile(90)));
     }
 
     private long toMs(long nano) {
