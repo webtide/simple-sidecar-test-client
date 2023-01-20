@@ -13,11 +13,12 @@ spec:
       labels:
         app: simple-test-sidecar
     spec:
-      nodeSelector:
-        simple-test-sidecar: "true"
+      #nodeSelector:
+      #  simple-test-sidecar: "true"
       containers:
         - name: jetty-simple-client-server
           image: jettyproject/jetty-simple-test-client:latest
+          imagePullPolicy: Always
           resources:
             limits:
               memory: "8Gi"
@@ -27,16 +28,19 @@ spec:
               cpu: "2.4"
           ports:
             - containerPort: 8080
-          args: ["jetty.http.port","8080"]
+            - containerPort: 8082
+          args: ["jetty.http.port","8080", "jetty.ssl.port", "8082"]
         - name: jetty-simple-server
-          image: jettyproject/jetty-simple-test-server:latest
+          image: jettyproject/jetty-demo-simple:latest
+          imagePullPolicy: Always
           resources:
             limits:
               memory: "4Gi"
-              cpu: "0.2"
+              cpu: "1"
             requests:
               memory: "4Gi"
-              cpu: "0.2"
+              cpu: "1"
           ports:
             - containerPort: 9090
-          args: ["jetty.http.port","9090"]
+            - containerPort: 9092
+          args: ["jetty.http.port","9090", "jetty.ssl.port", "9092"]

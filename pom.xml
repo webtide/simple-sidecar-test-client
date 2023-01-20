@@ -161,7 +161,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>build-docker-server</id>
+            <id>build-docker-jetty-demo-simple</id>
             <phase>package</phase>
             <goals>
               <goal>exec</goal>
@@ -172,13 +172,13 @@
                 <argument>build</argument>
                 <argument>.</argument>
                 <argument>-f</argument>
-                <argument>Dockerfile-server</argument>
-                <argument>--tag=jettyproject/jetty-simple-test-server:latest</argument>
+                <argument>Dockerfile-demo-simple</argument>
+                <argument>--tag=jettyproject/jetty-demo-simple:latest</argument>
               </arguments>
             </configuration>
           </execution>
           <execution>
-            <id>push-docker-server</id>
+            <id>push-docker-jetty-demo-simple</id>
             <phase>deploy</phase>
             <goals>
               <goal>exec</goal>
@@ -187,7 +187,7 @@
               <executable>docker</executable>
               <arguments>
                 <argument>push</argument>
-                <argument>jettyproject/jetty-simple-test-server:latest</argument>
+                <argument>jettyproject/jetty-demo-simple:latest</argument>
               </arguments>
             </configuration>
           </execution>
