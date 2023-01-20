@@ -29,7 +29,7 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 8082
-          args: ["jetty.http.port=8080", "jetty.ssl.port=8082"]
+          args: ["jetty.http.port=8080", "jetty.ssl.port=8082","jetty.ssl.sniHostCheck=false"]
         - name: jetty-simple-server
           image: jettyproject/jetty-demo-simple:latest
           imagePullPolicy: Always
@@ -43,4 +43,4 @@ spec:
           ports:
             - containerPort: 9090
             - containerPort: 9092
-          args: ["jetty.http.port=9090", "jetty.ssl.port=9092"]
+          args: ["jetty.http.port=9090", "jetty.ssl.port=9092","jetty.ssl.sniHostCheck=false"]
