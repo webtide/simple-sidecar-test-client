@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-jetty-sidecar
+  namespace: jetty
+spec:
+  selector:
+    app: simple-jetty-sidecar
+  type: ClusterIP
+  ports:
+    - name: http-client
+      port: 8080
+      targetPort: 8080
+    - name: https-client
+      port: 8443
+      targetPort: 8443
+    - name: http-server
+      port: 9090
+      targetPort: 9090
+    - name: https-server
+      port: 9092
+      targetPort: 9092
