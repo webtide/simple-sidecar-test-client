@@ -81,7 +81,10 @@ public class RunServlet extends HttpServlet {
 
     private void runLoad(HttpServletRequest request) throws ExecutionException, InterruptedException, TimeoutException {
         long minutes = Integer.parseInt(getParameterValue(request, "time", "runLoad.time", "5"));
-        LOGGER.info("start run for {} minutes", minutes);
+        String scheme = getParameterValue(request, "scheme", "runLoad.scheme", "https");
+        String host = getParameterValue(request, "host", "runLoad.host", "localhost");
+        int port = Integer.parseInt(getParameterValue(request, "port", "runLoad.port", "8443"));
+        LOGGER.info("start run to {}:://{}:{} for {} minutes", scheme, host, port, minutes);
         Resource resource = new Resource("/demo-simple/");
 
         ResponseTimeListener responseTimeListener = new ResponseTimeListener();
@@ -90,9 +93,9 @@ public class RunServlet extends HttpServlet {
         sslContextFactory.setTrustAll(true);
 
         LoadGenerator generator = LoadGenerator.builder()
-                .scheme(getParameterValue(request, "scheme", "runLoad.scheme", "https"))
-                .host(getParameterValue(request, "host", "runLoad.host", "localhost"))
-                .port(Integer.parseInt(getParameterValue(request, "port", "runLoad.port", "8443")))
+                .scheme(scheme)
+                .host(host)
+                .port(port)
                 .resource(resource)
                 .sslContextFactory(sslContextFactory)
                 .httpClientTransportBuilder(new HTTP1ClientTransportBuilder())
