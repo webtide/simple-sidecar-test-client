@@ -27,6 +27,5 @@ spec:
               memory: "4Gi"
               cpu: "1"
           ports:
-            - containerPort: 9090
-            - containerPort: 9092
-          args: ["jetty.http.port","9090", "jetty.ssl.port", "9092"]
+            - containerPort: 8080
+            - containerPort: 8443
