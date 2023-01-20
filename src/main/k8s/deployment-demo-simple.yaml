@@ -19,6 +19,7 @@ spec:
         - name: jetty-simple-server
           image: jettyproject/jetty-demo-simple:latest
           imagePullPolicy: Always
+          args: ["jetty.ssl.sniHostCheck=false"]
           resources:
             limits:
               memory: "4Gi"
