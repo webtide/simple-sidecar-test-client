@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jetty-demo-simple
+  namespace: jetty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jetty-demo-simple
+  template:
+    metadata:
+      labels:
+        app: jetty-demo-simple
+    spec:
+      #nodeSelector:
+      #  simple-test-sidecar: "true"
+      containers:
+        - name: jetty-simple-server
+          image: jettyproject/jetty-demo-simple:latest
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "4Gi"
+              cpu: "1"
+            requests:
+              memory: "4Gi"
+              cpu: "1"
+          ports:
+            - containerPort: 9090
+            - containerPort: 9092
+          args: ["jetty.http.port","9090", "jetty.ssl.port", "9092"]
