@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 
 public class RunServlet extends HttpServlet {
 
-    private static final boolean RUN_LOAD_ON_START = Boolean.getBoolean("runLoadOnStart");
+    private static final boolean RUN_LOAD_ON_START = Boolean.getBoolean("runLoad.onStart");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RunServlet.class);
 
