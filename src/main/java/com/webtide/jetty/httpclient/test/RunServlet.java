@@ -113,10 +113,10 @@ public class RunServlet extends HttpServlet {
                 .resourceListener(responseTimeListener)
                 .build();
 
-        LOGGER.info("start LoadGenerator: {}", generator);
+        LOGGER.info("start LoadGenerator: {}", generator.getConfig());
 
         CompletableFuture<Void> complete = generator.begin();
-        complete.get(minutes + 1, TimeUnit.MINUTES);
+        complete.get(minutes + 3, TimeUnit.MINUTES);
         Histogram histogram = responseTimeListener.histogram;
         LOGGER.info(new HistogramSnapshot(histogram).toString());
     }
