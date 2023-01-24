@@ -18,30 +18,34 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RunServlet extends HttpServlet {
 
-    private static boolean RUN_LOAD_ON_START = Boolean.getBoolean("runLoadOnStart");
+    private static final boolean RUN_LOAD_ON_START = Boolean.getBoolean("runLoadOnStart");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RunServlet.class);
 
+    private final ExecutorService executorService =
+            Executors.newFixedThreadPool(1, r -> new Thread(r, "runServletThread"));
 
     @Override
     public void init() throws ServletException {
         LOGGER.info("RunServlet#init");
         // should we test if target host:port responding?
         // then run test
-        if (Boolean.getBoolean("runLoad.onStart")){
+        if (RUN_LOAD_ON_START){
             try {
-                new Thread(() -> {
+                executorService.submit(() -> {
                     try {
                         runLoad(null);
                     } catch (ExecutionException | InterruptedException | TimeoutException e) {
                         LOGGER.error("Ignore except running load:" + e.getMessage(), e);
                     }
-                }).start();
+                });
             } catch (Throwable e) {
                 LOGGER.error("error running the load", e);
                 throw new RuntimeException(e);
@@ -62,13 +66,13 @@ public class RunServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if ("true".equals(req.getParameter("runLoad"))) {
-            new Thread(() -> {
+            executorService.submit(() -> {
                 try {
                     runLoad(req);
                 } catch (ExecutionException | InterruptedException | TimeoutException e) {
                     LOGGER.error("Ignore except running load:" + e.getMessage(), e);
                 }
-            }).start();
+            });
             PrintWriter writer = resp.getWriter();
             writer.println("Load Restarted");
             writer.flush();
@@ -84,7 +88,6 @@ public class RunServlet extends HttpServlet {
         String scheme = getParameterValue(request, "scheme", "runLoad.scheme", "https");
         String host = getParameterValue(request, "host", "runLoad.host", "localhost");
         int port = Integer.parseInt(getParameterValue(request, "port", "runLoad.port", "8443"));
-        LOGGER.info("start run to {}:://{}:{} for {} minutes", scheme, host, port, minutes);
         Resource resource = new Resource("/demo-simple/");
 
         ResponseTimeListener responseTimeListener = new ResponseTimeListener();
@@ -109,6 +112,8 @@ public class RunServlet extends HttpServlet {
                 .listener(responseTimeListener)
                 .resourceListener(responseTimeListener)
                 .build();
+
+        LOGGER.info("start LoadGenerator: {}", generator);
 
         CompletableFuture<Void> complete = generator.begin();
         complete.get(minutes + 1, TimeUnit.MINUTES);
