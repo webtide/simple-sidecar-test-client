@@ -34,13 +34,13 @@ public class RunServlet extends HttpServlet {
         // then run test
         if (RUN_LOAD_ON_START){
             try {
-                new Thread(() -> {
+                //new Thread(() -> {
                     try {
                         runLoad(null);
                     } catch (ExecutionException | InterruptedException | TimeoutException e) {
                         LOGGER.error("Ignore except running load:" + e.getMessage(), e);
                     }
-                }).start();
+                //}).start();
             } catch (Throwable e) {
                 LOGGER.error("error running the load", e);
                 throw new RuntimeException(e);
@@ -61,13 +61,13 @@ public class RunServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if ("true".equals(req.getParameter("runLoad"))) {
-            new Thread(() -> {
+            //new Thread(() -> {
                 try {
                     runLoad(req);
                 } catch (ExecutionException | InterruptedException | TimeoutException e) {
                     LOGGER.error("Ignore except running load:" + e.getMessage(), e);
                 }
-            }).start();
+            //}).start();
             PrintWriter writer = resp.getWriter();
             writer.println("Load Restarted");
             writer.flush();
