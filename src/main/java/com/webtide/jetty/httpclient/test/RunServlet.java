@@ -115,7 +115,7 @@ public class RunServlet extends HttpServlet {
             Histogram histogram = responseTimeListener.histogram;
             LOGGER.info(new HistogramSnapshot(histogram).toString());
         });
-        complete.join();
+        //complete.join();
         //complete.get(minutes + 10, TimeUnit.MINUTES);
 
     }
