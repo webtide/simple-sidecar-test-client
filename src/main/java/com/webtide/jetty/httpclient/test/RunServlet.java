@@ -96,7 +96,7 @@ public class RunServlet extends HttpServlet {
                 .port(port)
                 .resource(resource)
                 .sslContextFactory(sslContextFactory)
-                .resourceRate(Integer.parseInt(getParameterValue(request, "resourceRate", "runLoad.resourceRate", "0")))
+                .resourceRate(Integer.parseInt(getParameterValue(request, "resourceRate", "runLoad.resourceRate", "5000")))
                 .httpClientTransportBuilder(new HTTP1ClientTransportBuilder())
                 .threads(Integer.parseInt(getParameterValue(request, "threads", "runLoad.threads", "2")))
                 .usersPerThread(Integer.parseInt(getParameterValue(request, "usersPerThread", "runLoad.usersPerThread", "10")))
